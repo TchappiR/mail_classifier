@@ -4,8 +4,7 @@ from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
-from dotenv import load_dotenv
-load_dotenv()
+
 
 # Si tu modifies ces portées (SCOPES), supprime le fichier token.json.
 SCOPES = ['https://www.googleapis.com/auth/gmail.readonly']
@@ -23,8 +22,8 @@ def get_gmail_service():
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
         else:
-            # Nécessite le fichier credentials.json téléchargé depuis Google Cloud
-            flow = InstalledAppFlow.from_client_secrets_file('credentials.json', SCOPES)
+            # Nécessite le fichier credentials_gmail.json téléchargé depuis Google Cloud
+            flow = InstalledAppFlow.from_client_secrets_file('credentials_gmail.json', SCOPES)
             creds = flow.run_local_server(port=0)
         # Sauvegarde des identifiants pour la prochaine exécution
         with open('token.json', 'w') as token:
@@ -57,13 +56,15 @@ def fetch_all_tickets():
         payload = txt.get('payload', {})
         headers = payload.get('headers', [])
         
-        # Extraction du Sujet
+        # Extraction du Sujet et de l'Expéditeur
         sujet = ""
+        expediteur = ""
         for header in headers:
             if header['name'] == 'Subject':
                 sujet = header['value']
-                break
-        
+            elif header['name'] == 'From':
+                expediteur = header['value']
+                
         # Extraction du contenu (corps de l'e-mail)
         contenu = ""
         if 'parts' in payload:
@@ -83,16 +84,12 @@ def fetch_all_tickets():
         tickets.append({
             "id": msg['id'],
             "sujet": sujet,
+            "expediteur": expediteur,
             "contenu": contenu.strip()
         })
 
     print("Extraction terminée avec succès !")
     return tickets
-
-
-def read_file(path, encoding="utf-8"):
-    with open(path, encoding=encoding) as f:
-        return f.read()
 
 
 

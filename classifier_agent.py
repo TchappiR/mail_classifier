@@ -11,7 +11,7 @@ def load_prompt(path):
         exit(1)
 
 # Chargement du prmpt
-SYSTEM_PROMPT = load_prompt(path="/prompt.txt")
+SYSTEM_PROMPT = load_prompt(path="prompt.txt")
 
 # Fonction principale de classification
 def classify_ticket(email_content):
